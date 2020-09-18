@@ -37,8 +37,6 @@ class NewController : public Controller {
 }  // namespace apollo
 ```
 
-
-
 ## 在文件`control_config` 中添加新控制器的配置信息
 
 按照下面的步骤添加新控制器的配置信息:
@@ -75,9 +73,7 @@ class NewController : public Controller {
 
 5. `protobuf`定义完成后，在`modules/control/conf/control_conf.pb.txt`中相应更新控制配置文件。
 
-```
 注意：上面的"control/conf"文件是Apollo的默认文件。您的项目可能使用不同的控制配置文件.
-```
 
 ## 注册新控制器
 

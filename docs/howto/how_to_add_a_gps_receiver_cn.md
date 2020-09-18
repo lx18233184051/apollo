@@ -1,10 +1,13 @@
 # 如何添加新的GPS接收器
 
 ## 简介
+
 GPS接收器是一种从GPS卫星上接收信息，然后根据这些信息计算设备地理位置、速度和精确时间的设备。这种设备通常包括一个接收器，一个IMU（Inertial measurement unit，惯性测量单元），一个针对轮编码器的接口以及一个将各传感器获取的数据融合到一起的融合引擎。Apollo系统中默认使用Novatel 板卡，该说明详细介绍如何添加并使用一个新的GPS接收器。
 
 ## 添加GPS新接收器的步骤
+
 请按照下面的步骤添加新的GPS接收器.
+
   1. 通过继承基类“Parser”，实现新GPS接收器的数据解析器
   2. 在Parser类中为新GPS接收器添加新接口
   3. 在文件`config.proto`中, 为新GPS接收器添加新数据格式
@@ -124,7 +127,7 @@ Parser* Parser::create_ublox() {
 
 在config.proto文件中, 为新的GPS接收器添加新的数据格式定义:
 
-在配置文件（modules/drivers/gnss/proto/config.proto）中添加`UBLOX_TEXT` and `UBLOX_BINARY` 
+在配置文件（modules/drivers/gnss/proto/config.proto）中添加`UBLOX_TEXT` and `UBLOX_BINARY`
 
 ```txt
 message Stream {

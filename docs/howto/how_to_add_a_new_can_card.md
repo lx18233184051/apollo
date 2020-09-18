@@ -1,11 +1,13 @@
 # How to Add a New CAN Card
 
 ## Introduction
+
 The Controller Area Network (CAN) is a network used intensively in many microcontrollers and devices to transfer data between devices without the assistance of a host computer.
 
 The default CAN card used in Apollo is the **ESD CAN-PCIe card**. You can add a new CAN card using the steps below:
 
 ## Adding a New CAN Card
+
 Complete the following required task sequence to add a new CAN card:
 
 1. Implement the `CanClient` class of the new CAN card.
@@ -103,8 +105,10 @@ class ExampleCanClient : public CanClient {
 ```
 
 ### Step 2
+
 To register the New CAN Card in CanClientFactory,
 add the following code to `CanClientFactory`:
+
 ```cpp
 void CanClientFactory::RegisterCanClients() {
   Register(CANCardParameter::ESD_CAN,
@@ -131,6 +135,7 @@ message CANCardParameter {
   ... ...
 }
 ```
+
 Update `/modules/canbus/conf/canbus_conf.pb.txt`
 
 ```txt

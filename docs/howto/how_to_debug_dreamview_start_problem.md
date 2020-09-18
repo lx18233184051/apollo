@@ -1,16 +1,17 @@
-## How to Debug the Dreamview Start Problem
+# How to Debug the Dreamview Start Problem
 
-### Steps to Start Dreamview
+## Steps to Start Dreamview
 
 If you encounter problems when starting Dreamview in the `docker/scripts/dev` sequence, first check if you are using the correct commands as shown below.
 
 ```bash
-$ bash docker/scripts/dev_start.sh
-$ bash docker/scripts/dev_into.sh
-$ bash apollo.sh build
-$ bash scripts/bootstrap.sh
+  bash docker/scripts/dev_start.sh
+  bash docker/scripts/dev_into.sh
+  bash apollo.sh build
+  bash scripts/bootstrap.sh
 ```
-### Dreamview Fails to Start
+
+## Dreamview Fails to Start
 
 If Dreamview fails to start, use the script below to check the Dreamview startup log and restart Dreamview.
 
@@ -39,7 +40,7 @@ $ bash scripts/dreamview.sh
 
 If you get nothing in dreamview startup logs, you can try to debug dreamview with gdb, use the following commands:
 
-```
+```bash
 $ gdb --args /apollo/bazel-bin/modules/dreamview/dreamview --flagfile=/apollo/modules/dreamview/conf/dreamview.conf
 # or
 $ source scripts/apollo_base.sh;
@@ -55,10 +56,12 @@ If you see an error `Illegal instruction` and something related with **libpcl_sa
 This usually happens when you're trying to run Apollo/dreamview on a machine that the CPU does not support FMA/FMA3 instructions, it will fail because the prebuilt pcl lib shipped with docker image is compiled with FMA/FMA3 support.
 
 There are 2 steps to resolve this issue:
+
 1. Identify if the issue is due to pcl lib through gdb:
     find the coredump file under /apollo/data/core/ with name core_dreamview.$PID.
 If you see logs like:
-```
+
+```bash
 @in_dev_docker:/apollo$ gdb bazel-bin/modules/dreamview/dreamview  data/core/core_dreamview.378
 GNU gdb (Ubuntu 7.7.1-0ubuntu5~14.04.3) 7.7.1
 Copyright (C) 2014 Free Software Foundation, Inc.
@@ -106,7 +109,8 @@ double boost::math::detail::erf_inv_imp<double, boost::math::policies::policy<bo
 ```
 
 More info:
-```
+
+```bash
 ~/playground/apollo$ git rev-parse HEAD
 321bc25633fe2115e8ea4b2e68555c8c0d301b41
 
@@ -121,14 +125,17 @@ apolloauto/apollo   map_volume-sunnyvale_loop-latest       36dc0d1c2551        2
 build cmd:
 in_dev_docker:/apollo$ ./apollo.sh build_no_perception dbg
 ```
+
 2. Compile pcl and copy the pcl library files to `/usr/local/lib`:
 
 See [/apollo/WORKSPACE.in](https://github.com/ApolloAuto/apollo/blob/master/WORKSPACE.in) to identify your pcl library version:
+
 - Prior to Apollo 5.0 (inclusive): pcl-1.7
 - After Apollo 5.0: pcl-1.9
 
 Inside docker:
-```
+
+```bash
 (to keep pcl in host, we save pcl under /apollo)
 cd /apollo
 git clone https://github.com/PointCloudLibrary/pcl.git
@@ -137,8 +144,10 @@ git checkout -b <your pcl-lib version> pcl-<your pcl-lib version>
 Ex: git checkout -b 1.7.2 pcl-1.7.2
     git checkout -b 1.9.1 pcl-1.9.1
 ```
+
 then hack CMakeLists.txt with :
-```
+
+```bash
 ~/playground/apollo/pcl$ git diff
 diff --git a/CMakeLists.txt b/CMakeLists.txt
 index f0a5600..42c182e 100644
@@ -163,7 +172,8 @@ index f0a5600..42c182e 100644
 ```
 
 Then build with:
-```
+
+```bash
 cd pcl
 mkdir build
 cd build
@@ -182,7 +192,8 @@ ldconfig
 ```
 
 And finally restart Dreamview using
-```
+
+```bash
     bash scripts/bootstrap.sh stop
     bash scripts/bootstrap.sh start
 ```
@@ -191,7 +202,7 @@ And finally restart Dreamview using
 
 If CPU does not support AVX instructions, and you gdb the coredump file under /apollo/data/core/ with name core_dreamview.$PID, you may see logs like:
 
-```
+```bash
 Program terminated with signal SIGILL, Illegal instruction.
 #0  0x000000000112b70a in std::_Hashtable<std::string, std::string, std::allocator<std::string>, std::__detail::_Identity, std::equal_to<std::string>, google::protobuf::hash<std::string>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<true, true, true> >::_Hashtable (this=0x3640288, __bucket_hint=10,
     __h1=..., __h2=..., __h=..., __eq=..., __exk=..., __a=...)
@@ -201,7 +212,9 @@ Program terminated with signal SIGILL, Illegal instruction.
 ```
 
 To resolve this issue, in apollo/apollo.sh, comment or delete:
-```
+
+```bash
 --copt=-mavx2
 ```
+
 Then try to build and start dreamview again.

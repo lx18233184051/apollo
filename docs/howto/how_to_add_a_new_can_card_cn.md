@@ -1,11 +1,13 @@
 # 如何添加新的CAN卡
 
 ## 简介
+
 控制器区域网络（CAN）是在许多微控制器和设备中密集使用的网络，用于在没有主计算机帮助的情况下在设备之间传输数据。
 
 Apollo中使用的默认CAN卡是 **ESD CAN-PCIe卡**。您可以使用以下步骤添加新的CAN卡：
 
 ## 添加新CAN卡
+
 添加新的CAN卡需要完成以下几个步骤:
 
 1. 实现新CAN卡的`CanClient`类。
@@ -103,11 +105,13 @@ class ExampleCanClient : public CanClient {
 ```
 
 ### 步骤 2
+
 在CanClientFactory中注册新CAN卡，
 在 `CanClientFactory`中添加如下代码:
+
 ```cpp
 void CanClientFactory::RegisterCanClients() {  
-  Register(CANCardParameter::ESD_CAN, 
+  Register(CANCardParameter::ESD_CAN,
            []() -> CanClient* { return new can::EsdCanClient(); });  
   
   // register the new CAN card here.  
@@ -119,7 +123,7 @@ void CanClientFactory::RegisterCanClients() {
 ### 步骤 3
 
 接下来，需要更新配置文件
-在`/modules/canbus/proto/can_card_parameter.proto`添加 EXAMPLE_CAN 
+在`/modules/canbus/proto/can_card_parameter.proto`添加 EXAMPLE_CAN
 
 ```proto
 message CANCardParameter {
@@ -128,13 +132,14 @@ message CANCardParameter {
     ESD_CAN = 1;
     EXAMPLE_CAN = 2; // add new CAN card here.
   }
-  ... ... 
+  ... ...
 }
 ```
+
 Update `/modules/canbus/conf/canbus_conf.pb.txt`
 
 ```txt
-... ... 
+... ...
 can_card_parameter {
   brand:EXAMPLE_CAN
   type: PCI_CARD // suppose the new can card is PCI_CARD

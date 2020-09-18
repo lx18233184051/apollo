@@ -1,10 +1,13 @@
 # How to add a new GPS Receiver
 
 ## Introduction
+
 GPS receiver is a device that receives information from GPS satellites and then calculates the device's geographical position, velocity and precise time. The device usually includes a receiver, an IMU (depends on the model), an interface to a wheel encoder, and a fusion engine that combines information from those sensors. The Default GPS receiver used in Apollo is Novatel cards. The instruction demonstrates how to add and use a new GPS Receiver.
 
 ## Steps to add a new GPS Receiver
+
 Please follow the steps below to add a new GPS Receiver.
+
   1. Implement the new data parser for the new GPS receiver, by inheriting class `Parser`
   2. Add new interfaces in `Parser` class for the new GPS receiver
   3. In `config.proto`, add the new data format for the new GPS receiver

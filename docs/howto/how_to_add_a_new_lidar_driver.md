@@ -11,12 +11,14 @@ As default, Apollo platform support multiple types of Lidar drivers, including 1
 Taking velodyne lidar driver as an example, there are three major components:
 
 1. [Driver](https://github.com/ApolloAuto/apollo/tree/master/modules/drivers/velodyne/driver): Driver receives UDP data packets from lidar sensor, and packages the data packets into a frame of scanning data in the format of VelodyneScan. VelodyneScan is defined in file below:
-```
+
+```bash
 modules/drivers/velodyne/proto/velodyne.proto
 ```
 
 2. [Parser](https://github.com/ApolloAuto/apollo/tree/master/modules/drivers/velodyne/parser): Parser takes one frame data in format of VelodyneScan as input, converts the cloud points in the frame from spherical coordinate system to Cartesian coordinates system, then sends out the point cloud as output. The pointcloud format is defined in file below:
-```
+
+```bash
 modules/drivers/proto/pointcloud.proto
 ```
 
@@ -24,24 +26,23 @@ modules/drivers/proto/pointcloud.proto
 
 ## Steps to add a new Lidar driver
 
-#### 1. Get familiar with Apollo Cyber RT framework. 
+### 1. Get familiar with Apollo Cyber RT framework. 
 
 Please refer to the [manuals of Apollo Cyber RT](https://github.com/ApolloAuto/apollo/tree/master/docs/cyber).
 
-
-#### 2. Define message for raw data
+### 2. Define message for raw data
 
 Apollo already define the format of pointcloud. For new lidar, you only need to define the protobuf message for the raw scannning data. Those raw data will be used for archive and offline development. Compared to processed pointcloud data, raw data saves a lot of storage spaces for long term. The new message of the scan data can be define as below:
 
 ```c++
 // a scan message sample
 message ScanData {
-	optional apollo.common.Header header = 1;  // apollo header
-	optional Model model = 2;                  // device model
-	optional Mode mode = 3;                    // work mode
-	// device serial number, corresponds to a specific calibration file
-	optional string sn = 4;
-	repeated bytes raw_data = 5;               // raw scan data
+  optional apollo.common.Header header = 1;  // apollo header
+  optional Model model = 2;                  // device model
+  optional Mode mode = 3;                    // work mode
+  // device serial number, corresponds to a specific calibration file
+  optional string sn = 4;
+  repeated bytes raw_data = 5;               // raw scan data
 }
 ```
 
@@ -58,27 +59,25 @@ class DriverComponent : public Component<> {
  public:
   ~VelodyneDriverComponent();
   bool Init() override {
-  	poll_thread_.reset(new thread([this]{
-  		this->Poll();
-  	}));
+    poll_thread_.reset(new thread([this] { this->Poll(); }));
   }
-	
- private: 
+
+ private:
   void Poll() {
-  	while (apollo::cyber::Ok()) {
-  	  // poll data from port xxx
-  	  // ...
-  	  austo scan = std::make_shared<ScanData>();
-  	  // pack ScanData
-  	  // ...
-  	  writer_.write(scan);
-  	}
+    while (apollo::cyber::Ok()) {
+      // poll data from port xxx
+      // ...
+      austo scan = std::make_shared<ScanData>();
+      // pack ScanData
+      // ...
+      writer_.write(scan);
+    }
   }
-   
+
   std::shared_ptr<std::thread> poll_thread_;
   std::shared_ptr<apollo::cyber::Writer<ScanData>> writer_;
 };
-	
+
 CYBER_REGISTER_COMPONENT(DriverComponent)
 ```
 
@@ -87,7 +86,7 @@ CYBER_REGISTER_COMPONENT(DriverComponent)
  If the new lidar driver already provides the pointcloud data in Cartesian coordinates system, then you just need to store those data in the protobuf format defined in Apollo.
 
 The Parser converts the lidar raw data to the pointcloud format in Cartesian coordinates system. Parser takes ScanData as input. For each cloud point, it will parse the timestamp, x/y/z coordinates and intensity, then packages all the cloudpoint information into a frame of pointcloud. Each cloud point transformed into the FLU (Front: x, Left: y, Up: z）coordinates with Lidar as the origin point.
-	
+
 ```c++
 message PointXYZIT {
   optional float x = 1 [default = nan];
@@ -97,37 +96,35 @@ message PointXYZIT {
   optional uint64 timestamp = 5 [default = 0];
 }
 ```
-	
+
 Then you need to create a new ParserComponent，which inherits Components templates with ScanData. ParserComponent takes ScanData as input, then generates pointcloud message and sents it out.
 
 ```c++
 ...
 class ParserComponent : public Component<ScanData> {
  public:
-  bool Init() override {
-  	...
-  }
-  
+  bool Init() override { ... }
+
   bool Proc(const std::shared_ptr<ScanData>& scan_msg) override {
     // get a pointcloud object from objects pool
-  	auto point_cloud_out = point_cloud_pool_->GetObject(); 
-  	// clear befor using
-  	point_cloud_out->clear();	
-  	// parse scan data and generate pointcloud
-  	parser_->parse(scan_msg, point_cloud_out);
-  	// write pointcloud to a specific channel
-  	writer_->write(point_cloud);
+    auto point_cloud_out = point_cloud_pool_->GetObject();
+    // clear befor using
+    point_cloud_out->clear();
+    // parse scan data and generate pointcloud
+    parser_->parse(scan_msg, point_cloud_out);
+    // write pointcloud to a specific channel
+    writer_->write(point_cloud);
   }
-	
+
  private:
   std::shared_ptr<Writer<PointCloud>> writer_;
   std::unique_ptr<Parser> parser_ = nullptr;
-  
-  std::shared_ptr<CCObjectPool<PointCloud>> point_cloud_pool_ = nullptr; 
+
+  std::shared_ptr<CCObjectPool<PointCloud>> point_cloud_pool_ = nullptr;
   int pool_size_ = 8;
 };
-	
 CYBER_REGISTER_COMPONENT(ParserComponent)
+
 ```
 
 #### 5. Motion compensation for pointcloud
@@ -137,7 +134,7 @@ Motion compensation is optional depends on lidar hardware design. E.g. if the th
 #### 6. Configure the dag file
 
 After done with each component, you just need to configure the DAG config file to add each component into the data processing pipeline. E.g.  lidar_driver.dag:
-		
+
 ```python
 # Define all coms in DAG streaming.
 module_config {
@@ -150,7 +147,7 @@ module_config {
       }
     }
 }
-	
+
 module_config {
     module_library : "/apollo/bazel-bin/modules/drivers/xxx/parser/libxxx_parser_component.so"
     components {
@@ -162,7 +159,7 @@ module_config {
       }
     }
 }
-	
+
 module_config {
     module_library : "/apollo/bazel-bin/modules/drivers/xxx/compensator/libxxx_compensator_component.so"
     components {
@@ -183,4 +180,5 @@ After finishing all the previous steps, you can use the following command to sta
 ```bash
 mainboard -d /path/to/lidar_driver.dag
 ```
+
 To visualize the pointcloud output, you can run `cyber_visualizer` and choose the right channel for the pointcloud.
