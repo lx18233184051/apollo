@@ -1,0 +1,4 @@
+topic_conf {
+  localization_topic_name: "/apollo/localization/pose"
+  perception_topic_name: "/apollo/perception/obstacles"
+}

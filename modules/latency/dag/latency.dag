@@ -1,0 +1,19 @@
+module_config {
+    module_library : "/apollo/bazel-bin/modules/latency/latency_component.so"
+    components {
+        class_name : "LatencyComponent"
+        config {
+            name: "latency"
+            config_file_path: "/apollo/modules/latency/conf/latency_conf.pb.txt"
+            flag_file_path: "/apollo/modules/latency/conf/latency.conf"
+            readers: [
+                {
+                    channel: "/apollo/latency"
+                    qos_profile: {
+                        depth : 1
+                    }
+                }
+            ]
+        }
+    }
+}

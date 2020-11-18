@@ -1,0 +1,7 @@
+<cyber>
+    <module>
+        <name>latency</name>
+        <dag_conf>/apollo/modules/latency/dag/latency.dag</dag_conf>
+        <process_name>latency</process_name>
+    </module>
+</cyber>
