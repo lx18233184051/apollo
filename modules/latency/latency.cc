@@ -125,7 +125,7 @@ Header LatencyComponent::Transform(const apollo::common::Header& header) {
 }
 bool LatencyComponent::Process() {
   AERROR << "/apollo/latency.pb.txt finish";
-  cyber::common::SetProtoToASCIIFile(routing_latency_.,
+  cyber::common::SetProtoToASCIIFile(routing_latency_,
                                      "/apollo/routing_latency.pb.txt");
   cyber::common::SetProtoToASCIIFile(traffic_light_latency_,
                                      "/apollo/traffic_light_latency.pb.txt");
